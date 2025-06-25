@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upload Research Paper</title>
+  <style>
+    body { font-family: Arial; padding: 40px; background: #f0f0f0; }
+    .upload-box {
+      border: 3px dashed #555; padding: 40px;
+      text-align: center; background: white; border-radius: 10px;
+    }
+    input[type="file"] { display: none; }
+    .upload-box.dragover { border-color: green; }
+    #message { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Upload Your Research Paper 📄</h2>
+  <div class="upload-box" id="drop-area">
+    <p>Drag & drop your PDF here<br>or</p>
+    <button onclick="document.getElementById('fileElem').click()">Select File</button>
+    <form id="uploadForm">
+      <input type="file" id="fileElem" name="paper" accept=".pdf" />
+    </form>
+  </div>
+  <p id="message"></p>
+
+  <script>
+    const dropArea = document.getElementById("drop-area");
+    const fileElem = document.getElementById("fileElem");
+    const message = document.getElementById("message");
+
+    dropArea.addEventListener("dragover", e => {
+      e.preventDefault();
+      dropArea.classList.add("dragover");
+    });
+
+    dropArea.addEventListener("dragleave", () => {
+      dropArea.classList.remove("dragover");
+    });
+
+    dropArea.addEventListener("drop", e => {
+      e.preventDefault();
+      dropArea.classList.remove("dragover");
+      handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileElem.addEventListener("change", () => {
+      handleFile(fileElem.files[0]);
+    });
+
+    function handleFile(file) {
+      if (file.type !== "application/pdf") {
+        message.textContent = "❌ Only PDF files allowed!";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("paper", file);
+
+      fetch("/upload", {
+        method: "POST",
+        body: formData,
+      })
+        .then(res => res.text())
+        .then(data => {
+          message.textContent = "✅ " + data;
+        })
+        .catch(err => {
+          message.textContent = "❌ Upload failed!";
+        });
+    }
+  </script>
+</body>
+</html>
